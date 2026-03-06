@@ -9,6 +9,22 @@ The app is built around a standalone smart component `TableWidgetComponent` that
 
 and finally a `ContextMenuComponent` that handles the row action menu
 
+app
+  components
+    context-menu
+    data-table
+    filter-bar
+    table-widget
+  data (PS: The mock data is expressely generated to have a large variety of values for testing purpose)
+    mock-servers
+  models
+    filter-definition
+    server
+    table-action
+    table-query
+  store
+    table-state
+
 ## State Management Strategy
 
 All state management is handles in `TableStateService` using Angular Signals
