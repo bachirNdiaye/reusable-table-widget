@@ -1,1 +1,5 @@
-<p>context-menu works!</p>
+<div class="context-menu">
+  @for (action of actions; track action.key) {
+    <button (click)="onAction(action.key)">{{ action.label }}</button>
+  }
+</div>
