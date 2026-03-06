@@ -9,22 +9,32 @@ import { FilterDefinition, FilterOption } from '../models/filter-definition.mode
   providedIn: 'root'
 })
 export class TableStateService {
-  private readonly servers = signal<Server[]>(MOCK_SERVERS);
-  private readonly search = signal<string>('');
-  private readonly statusFilter = signal<string[]>([]);
-  private readonly assetFilter = signal<string[]>([]);
-  private readonly typeFilter = signal<string[]>([]);
-  private readonly licenseFilter = signal<string[]>([]);
-  private readonly hardwareFilter = signal<string[]>([]);
-  private readonly lastUpdatedFilter = signal<DateRange | null>(null);
-  private readonly sorting = signal<{ column: string; direction: SortDirection }>({ column: 'name', direction: 'asc' });
-  private readonly pagination = signal<{ page: number; pageSize: number }>({ page: 1, pageSize: 10 });
-  private readonly visibleColumns = signal<string[]>(['serial', 'name', 'assetName', 'version', 'serverType', 'license', 'hardware', 'status', 'warningsCount', 'lastCommDate']);
-  private readonly selectedRowsIds = signal<Set<string>>(new Set());
-  private readonly searchHistory = signal<string[]>([]);
-  private readonly filterVisibility = signal<{ [key: string]: boolean }>({});
+  readonly servers = signal<Server[]>(MOCK_SERVERS);
+  readonly sorting = signal<{ column: string; direction: SortDirection }>({ column: 'name', direction: 'asc' });
+  readonly selectedRowsIds = signal<Set<string>>(new Set());
+  readonly pagination = signal<{ page: number; pageSize: number }>({ page: 1, pageSize: 10 });
+  readonly visibleColumns = signal<string[]>(['serial', 'name', 'assetName', 'version', 'serverType', 'license', 'hardware', 'status', 'warningsCount', 'lastCommDate']);
+  readonly search = signal<string>('');
+  readonly statusFilter = signal<string[]>([]);
+  readonly assetFilter = signal<string[]>([]);
+  readonly typeFilter = signal<string[]>([]);
+  readonly licenseFilter = signal<string[]>([]);
+  readonly hardwareFilter = signal<string[]>([]);
+  readonly lastUpdatedFilter = signal<DateRange | null>(null);
+  readonly searchHistory = signal<string[]>([]);
+  readonly filterVisibility = signal<{ [key: string]: boolean }>({});
 
   constructor() { }
+
+  private buildFilterOptions(servers: Server[], field: keyof Server): FilterOption[] {
+    const values = Array.from(new Set(servers.map(s => s[field] as string)));
+    return values.map(val => ({
+      value: val,
+      label: val,
+      count: servers.filter(s => s[field] === val).length,
+      emphasized: false
+    }));
+  }
 
   filteredServers = computed(() => {
     let result = this.servers();
@@ -115,40 +125,14 @@ export class TableStateService {
   filterDefinitions: Signal<FilterDefinition[]> = computed(() => {
     const servers = this.servers();
 
-    const statusOptions: FilterOption[] = Array.from(new Set(servers.map(s => s.status))).map(status => ({
-      value: status,
-      label: status,
-      count: servers.filter(s => s.status === status).length,
-      emphasized: status.toLowerCase() === 'warning' && servers.some(s => s.status.toLowerCase() === 'warning' && s.warningsCount > 1)
+    const statusOptions = this.buildFilterOptions(servers, 'status').map(opt => ({
+      ...opt,
+      emphasized: opt.value === 'warning' && servers.some(s => s.status === 'warning' && s.warningsCount > 1)
     }));
-
-    const assetOptions: FilterOption[] = Array.from(new Set(servers.map(s => s.assetName))).map(asset => ({
-      value: asset,
-      label: asset,
-      count: servers.filter(s => s.assetName === asset).length,
-      emphasized: false
-    }));
-
-    const typeOptions: FilterOption[] = Array.from(new Set(servers.map(s => s.serverType))).map(type => ({
-      value: type,
-      label: type,
-      count: servers.filter(s => s.serverType === type).length,
-      emphasized: false
-    }));
-
-    const licenseOptions: FilterOption[] = Array.from(new Set(servers.map(s => s.license))).map(license => ({
-      value: license,
-      label: license,
-      count: servers.filter(s => s.license === license).length,
-      emphasized: false
-    }));
-
-    const hardwareOptions: FilterOption[] = Array.from(new Set(servers.map(s => s.hardware))).map(hardware => ({
-      value: hardware,
-      label: hardware,
-      count: servers.filter(s => s.hardware === hardware).length,
-      emphasized: false
-    }));
+    const assetOptions = this.buildFilterOptions(servers, 'assetName');
+    const typeOptions = this.buildFilterOptions(servers, 'serverType');
+    const licenseOptions = this.buildFilterOptions(servers, 'license');
+    const hardwareOptions = this.buildFilterOptions(servers, 'hardware');
 
     return [
       {
@@ -266,6 +250,7 @@ export class TableStateService {
   }
 
   selectAllOnPage() {
+    console.log('Selecting all on page');
     const currentPageIds = this.paginatedServers().map(server => server.id);
     this.selectedRowsIds.update(selected => {
       const newSelected = new Set(selected);
@@ -275,6 +260,7 @@ export class TableStateService {
   }
 
   clearSelection() {
+    console.log('Clearing selection');
     this.selectedRowsIds.update(() => new Set());
   }
 
