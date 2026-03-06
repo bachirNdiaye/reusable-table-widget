@@ -1,5 +1,7 @@
 import { Server } from "../models/server.model";
 
+// PS: The mock data is expressely generated to have a large variety of values for testing purpose
+
 export const MOCK_SERVERS: Server[] = [
   { id: 'srv-001', serial: 'SN-2024-A1B2C3', name: 'web-prod-01', assetName: 'DC-Paris', version: '3.0.0', serverType: 'Web', license: 'Enterprise', hardware: 'Dell R740', status: 'online', warningsCount: 0, lastCommDate: new Date('2026-03-05T10:30:00') },
   { id: 'srv-002', serial: 'SN-2024-D4E5F6', name: 'db-prod-01', assetName: 'DC-Paris', version: '2.3.1', serverType: 'Database', license: 'Enterprise', hardware: 'HP DL380', status: 'online', warningsCount: 0, lastCommDate: new Date('2026-03-05T09:15:00') },

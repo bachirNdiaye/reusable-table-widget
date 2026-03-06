@@ -143,8 +143,7 @@ export class TableStateService {
         disabled: statusOptions.length <= 1,
         visible: true,
         options: statusOptions
-      },
-      {
+      }, {
         key: 'asset',
         label: 'Asset',
         type: 'multiselect',
@@ -152,8 +151,7 @@ export class TableStateService {
         disabled: assetOptions.length <= 1,
         visible: true,
         options: assetOptions
-      },
-      {
+      }, {
         key: 'type',
         label: 'Type',
         type: 'multiselect',
@@ -161,8 +159,7 @@ export class TableStateService {
         disabled: typeOptions.length <= 1,
         visible: true,
         options: typeOptions
-      },
-      {
+      }, {
         key: 'license',
         label: 'License',
         type: 'multiselect',
@@ -170,8 +167,7 @@ export class TableStateService {
         disabled: licenseOptions.length <= 1,
         visible: true,
         options: licenseOptions
-      },
-      {
+      }, {
         key: 'hardware',
         label: 'Hardware',
         type: 'multiselect',
@@ -250,7 +246,7 @@ export class TableStateService {
   }
 
   selectAllOnPage() {
-    console.log('Selecting all on page');
+    // console.log('Selecting all on page');
     const currentPageIds = this.paginatedServers().map(server => server.id);
     this.selectedRowsIds.update(selected => {
       const newSelected = new Set(selected);
@@ -260,7 +256,7 @@ export class TableStateService {
   }
 
   clearSelection() {
-    console.log('Clearing selection');
+    // console.log('Clearing selection');
     this.selectedRowsIds.update(() => new Set());
   }
 

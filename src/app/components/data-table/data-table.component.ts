@@ -15,13 +15,9 @@ import { DatePipe } from '@angular/common';
 })
 export class DataTableComponent {
   readonly store = inject(TableStateService);
-
   hoveredRowId = signal<string | null>(null);
-
   editingCell = signal<{ rowId: string; column: string } | null>(null);
-
   editValue = signal<string>('');
-
   contextMenuRowId = signal<string | null>(null);
 
   onRowHover(id: string | null) {
