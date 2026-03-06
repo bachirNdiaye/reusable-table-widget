@@ -1,1 +1,139 @@
-<p>filter-bar works!</p>
+<div class="filter-bar">
+  <div class="filter-item">
+    <button class="filter-btn"
+            [class.active]="store.search()"
+            (click)="toggleDropdown('search')">
+      Search
+    </button>
+
+    @if (openDropdown() === 'search') {
+      <div class="dropdown">
+        <input type="text"
+               placeholder="Search servers..."
+               [value]="store.search()"
+               (input)="onSearchInput($any($event.target).value)" />
+
+        @if (store.searchHistory().length) {
+          <div class="recent-terms">
+            <span class="recent-label">Recent:</span>
+            @for (term of store.searchHistory(); track term) {
+              <button class="recent-btn" (click)="applyRecentTerm(term)">{{ term }}</button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @for (filter of store.filterDefinitions(); track filter.key) {
+    @if (filter.visible) {
+      <div class="filter-item">
+        <button class="filter-btn"
+                [class.active]="getFilterValues(filter.key).length > 0"
+                [disabled]="filter.disabled"
+                (click)="toggleDropdown(filter.key)">
+          {{ filter.label }}
+          @if (getFilterValues(filter.key).length > 0) {
+            <span class="bubble">{{ getFilterValues(filter.key).length }}</span>
+          }
+        </button>
+
+        @if (openDropdown() === filter.key && !filter.disabled) {
+          <div class="dropdown">
+
+            @if (filter.hasSearch) {
+              <input type="text"
+                     placeholder="Search..."
+                     [value]="assetSearchInput()"
+                     (input)="assetSearchInput.set($any($event.target).value)" />
+            }
+
+            <div class="options-list">
+              @for (option of (filter.key === 'asset' ? filteredAssetOptions() : filter.options); track option.value) {
+                <label [class.emphasized]="option.emphasized">
+                  <input type="checkbox"
+                         [checked]="getFilterValues(filter.key).includes(option.value)"
+                         (change)="toggleFilterValue(filter.key, option.value)" />
+                  {{ option.label }}
+                  @if (option.count !== undefined) {
+                    <span class="option-count">({{ option.count }})</span>
+                  }
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <div class="filter-item">
+    <button class="filter-btn"
+            [class.active]="store.lastUpdatedFilter()"
+            (click)="toggleDropdown('lastUpdated')">
+      Last Updated
+    </button>
+
+    @if (openDropdown() === 'lastUpdated') {
+      <div class="dropdown">
+        <label class="radio-option">
+          <input type="radio" name="lastUpdated" value="24h"
+                 [checked]="lastUpdatedPreset() === '24h'"
+                 (change)="onLastUpdatedPreset('24h')" />
+          Last 24h
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="lastUpdated" value="7d"
+                 [checked]="lastUpdatedPreset() === '7d'"
+                 (change)="onLastUpdatedPreset('7d')" />
+          Last 7 days
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="lastUpdated" value="30d"
+                 [checked]="lastUpdatedPreset() === '30d'"
+                 (change)="onLastUpdatedPreset('30d')" />
+          Last 30 days
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="lastUpdated" value="custom"
+                 [checked]="lastUpdatedPreset() === 'custom'"
+                 (change)="onLastUpdatedPreset('custom')" />
+          Custom
+        </label>
+
+        @if (lastUpdatedPreset() === 'custom') {
+          <div class="date-range">
+            <input type="date"
+                   [value]="customDateStart()"
+                   (change)="customDateStart.set($any($event.target).value); applyCustomDateRange()" />
+            <span>to</span>
+            <input type="date"
+                   [value]="customDateEnd()"
+                   (change)="customDateEnd.set($any($event.target).value); applyCustomDateRange()" />
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="filter-item">
+    <button class="filter-btn" (click)="toggleMoreFilters()">More Filters</button>
+
+    @if (moreFiltersOpen()) {
+      <div class="dropdown more-filters-panel">
+        @for (filter of store.filterDefinitions(); track filter.key) {
+          <label>
+            <input type="checkbox"
+                   [checked]="filter.visible"
+                   (change)="store.toggleFilterVisibility(filter.key)" />
+            {{ filter.label }}
+          </label>
+        }
+      </div>
+    }
+  </div>
+
+  @if (store.hasActiveFilters()) {
+    <button class="clear-btn" (click)="clearAll()">Clear Filters</button>
+  }
+</div>
