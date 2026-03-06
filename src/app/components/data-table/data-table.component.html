@@ -1,1 +1,118 @@
-<p>data-table works!</p>
+<div class="table-wrapper">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr cdkDropList
+            cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="onColumnDrop($event)">
+
+          <th class="col-checkbox">
+            <input type="checkbox"
+                   [checked]="isAllOnPageSelected()"
+                   (change)="toggleSelectAll()"
+                   aria-label="Select all rows on page" />
+          </th>
+
+          @for (col of store.visibleColumns(); track col) {
+            <th cdkDrag>
+              <div class="th-inner">
+                <span class="drag-handle" cdkDragHandle>#</span>
+                <span class="col-label" (click)="onSort(col)">
+                  {{ col }}
+                  @if (store.sorting().column === col) {
+                    <span class="sort-indicator">
+                      {{ store.sorting().direction === 'asc' ? '^' : 'v' }}
+                    </span>
+                  }
+                </span>
+              </div>
+            </th>
+          }
+
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (server of store.paginatedServers(); track server.id) {
+          <tr [class.row-hovered]="hoveredRowId() === server.id"
+              [class.row-selected]="store.selectedRowsIds().has(server.id)"
+              (mouseenter)="onRowHover(server.id)"
+              (mouseleave)="onRowHover(null)">
+
+            <td class="col-checkbox">
+              <input type="checkbox"
+                     [checked]="store.selectedRowsIds().has(server.id)"
+                     (change)="store.toggleRowSelection(server.id)" />
+            </td>
+
+            @for (col of store.visibleColumns(); track col) {
+              <td>
+                @if (col === 'name') {
+                  @if (editingCell()?.rowId === server.id && editingCell()?.column === 'name') {
+                    <input class="inline-edit"
+                           [value]="editValue()"
+                           (input)="editValue.set($any($event.target).value)"
+                           (keydown)="onEditKeydown($event)"
+                           (blur)="cancelEdit()" />
+                  } @else {
+                    <span class="editable-cell"
+                          (click)="startEditing(server.id, 'name', server.name)">
+                      {{ server.name }}
+                      @if (hoveredRowId() === server.id) {
+                        <span class="edit-icon">Edit</span>
+                      }
+                    </span>
+                  }
+                } @else if (col === 'warningsCount') {
+                  <span [class.warning-high]="server.warningsCount > 1">
+                    {{ server.warningsCount }}
+                  </span>
+                } @else if (col === 'lastCommDate') {
+                  {{ server[col] | date:'short' }}
+                } @else {
+                  {{ $any(server)[col] }}
+                }
+              </td>
+            }
+
+            <td class="col-actions">
+              @if (hoveredRowId() === server.id) {
+                <button class="btn-more" (click)="toggleContextMenu(server.id)">⋯</button>
+
+                @if (contextMenuRowId() === server.id) {
+                  <app-context-menu
+                    (actionSelected)="onAction($event)"
+                    (close)="contextMenuRowId.set(null)" />
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div class="pagination-size">
+      <label>Rows per page:</label>
+      <select [value]="store.pagination().pageSize"
+              (change)="store.setPageSize(+$any($event.target).value)">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+
+    <div class="pagination-nav">
+      <button [disabled]="store.pagination().page === 1"
+              (click)="store.setPage(store.pagination().page - 1)"><</button>
+      <span>Page {{ store.pagination().page }} / {{ totalPages() }}</span>
+      <button [disabled]="store.pagination().page >= totalPages()"
+              (click)="store.setPage(store.pagination().page + 1)">></button>
+    </div>
+
+    <span class="pagination-total">{{ store.totalCount() }} items</span>
+  </div>
+</div>
